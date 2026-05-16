@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Statistics | Member Visits & Check-In</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Visits Page Styles -->
+    <link rel="stylesheet" href="../css/visits-page.css">
+</head>
+<body>
+    <script>
+        // ========== AUTHENTICATION CHECK ==========
+        // Check if user is logged in before showing page content
+        
+        function checkAuthAndRedirect() {
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('current_user');
+    
+    if (!token || !user) {
+        const isInPages = window.location.pathname.includes('/pages/');
+        window.location.href = isInPages ? '../index.html' : 'index.html';
+        return false;
+    }
+    return true;
+}
+if (!checkAuthAndRedirect()) throw new Error('Authentication required');
+        
+   
+    </script>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <div class="logo-wrapper">
+                    <div class="church-icon">
+                        <img src="../images/emblem.png" class="church-emblem" alt="Church Emblem">
+                    </div>
+                    <span class="brand-text">Visits</span>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">                    
+                     <li class="nav-item"><a class="nav-link" href="../home.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/register.html"><i class="fas fa-user-plus"></i> Register</a></li>                    
+                    <li class="nav-item"><a class="nav-link active" href="../pages/visit.html"><i class="fas fa-calendar-check"></i> Visits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/update.html"><i class="fas fa-edit"></i> Outcomes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/dashboard.html"><i class="fas fa-chart-line"></i> Dashboards</a></li> 
+                    <li class="nav-item"><a class="nav-link" href="../pages/events.html"><i class="fas fa-calendar-alt"></i> Events</a></li>  
+                    <li class="nav-item"><a class="nav-link" href="../pages/payments.html"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>   
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container visits-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1><i class="fas fa-calendar-check"></i> Member Check-In</h1>
+                <p>Track attendance and manage visit records</p>
+            </div>
+        </div>
+
+        <!-- Message Area -->
+        <div id="messageArea" style="display: none;" class="alert-message"></div>
+
+        <!-- Split Layout -->
+        <div class="split-layout">
+            <!-- Left Side: Search & Check-In -->
+            <div class="search-section">
+                <div class="search-card">
+                    <div class="search-header">
+                        <i class="fas fa-search"></i> Find Member to Check-In
+                    </div>
+                    <div class="search-body">
+                        <div class="search-controls">
+                            <div class="search-input-group">
+                                <span class="input-group-icon"><i class="fas fa-search"></i></span>
+                                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, PIN, or contact..." autocomplete="off">
+                                <button class="btn-search" id="searchMembersBtn" title="Search">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <button class="btn-clear" id="clearSearchBtn" title="Clear Search">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                                <button class="btn-refresh" id="refreshDataBtn" title="Refresh Data">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="searchResults" style="display: none; margin-top: 1.5rem;">
+                    <div class="search-results-header">
+                        <h5><i class="fas fa-users"></i> Search Results</h5>
+                        <button class="btn-close-results" id="closeResultsBtn" title="Close Results">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="membersList" style="max-height: 500px; overflow-y: auto;"></div>
+                </div>
+            </div>
+
+            <!-- Right Side: Checked-In Members & Statistics -->
+            <div class="checkedin-section">
+                <!-- Statistics Card -->
+                <div class="stats-card">
+                    <h5><i class="fas fa-chart-bar"></i> Today's Statistics</h5>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalCheckedIn">0</div>
+                            <div class="stat-label">Total Check-Ins</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="paidKganyaCount">0</div>
+                            <div class="stat-label">Paid Kganya</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="sundayServiceCount">0</div>
+                            <div class="stat-label">Sunday Service</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="visitorsCount">0</div>
+                            <div class="stat-label">Visitors</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checked-In Members List -->
+                <div class="checkedin-container">
+                    <h5><i class="fas fa-check-circle"></i> Checked-In Today</h5>
+                    <div id="checkedInList" style="max-height: 400px; overflow-y: auto;">
+                        <div class="empty-state">
+                            <i class="fas fa-users" style="font-size: 3rem;"></i>
+                            <p>No members checked in yet today</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Check-In Form -->
+    <div id="checkInModal" class="custom-modal">
+        <div class="modal-card">
+            <div class="modal-header-custom">
+                <h5><i class="fas fa-calendar-check"></i> <span id="modalMemberName">Check-In Member</span></h5>
+                <button class="close-modal-btn" id="closeCheckInModalBtn">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="checkInMemberId">
+                <div class="form-group-modern">
+                    <label><i class="fas fa-tag"></i> Visit Purpose</label>
+                    <select id="visitPurpose" class="form-control-modern">
+                        <option value="sunday_service">Sunday Service</option>
+                        <option value="kganya_payment">Kganya Service</option>
+                        <option value="visitor">Visitor</option>
+                    </select>
+                </div>
+                <div class="form-group-modern">
+                    <label><i class="fas fa-calendar"></i> Visit Date</label>
+                    <input type="date" id="visitDate" class="form-control-modern" required>
+                </div>
+                <div class="form-group-modern checkbox-group" id="paidKganyaGroup">
+                    <label>
+                        <input type="checkbox" id="paidKganya"> <i class="fas fa-donate"></i> Paid Kganya on Visit
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn-secondary-modal" id="cancelCheckInBtn">Cancel</button>
+                <button class="btn-primary-modal" id="confirmCheckInBtn">Confirm Check-In</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <i class="fas fa-heart"></i> Management System
+                </div>
+                <div class="footer-section">
+                    <span id="currentYear"></span> &copy; All Rights Reserved
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../config.public.js"></script>          <!-- ADD THIS FIRST -->
+<script src="../js/api-client.js"></script>
+<script src="../js/visits-page.js"></script>
+
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                if (typeof api !== 'undefined') await api.logout();
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        }
+    </script>
+</body>
+</html>

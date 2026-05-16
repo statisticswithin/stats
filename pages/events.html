@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Events Management</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Events Page CSS -->
+    <link rel="stylesheet" href="../css/events-page.css">
+</head>
+
+<body>
+<script>
+    // ========== AUTHENTICATION CHECK ==========
+    // Check if user is logged in before showing page content
+    
+    function checkAuthAndRedirect() {
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('current_user');
+    
+    if (!token || !user) {
+        const isInPages = window.location.pathname.includes('/pages/');
+        window.location.href = isInPages ? '../index.html' : 'index.html';
+        return false;
+    }
+    return true;
+}
+if (!checkAuthAndRedirect()) throw new Error('Authentication required');
+</script>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../home.html">
+                <div class="logo-wrapper">
+                    <div class="church-icon">
+                        <img src="../images/emblem.png" class="church-emblem" alt="Church Emblem">
+                    </div>
+                    <span class="brand-text">Events</span>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="../home.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/register.html"><i class="fas fa-user-plus"></i> Register</a></li>                    
+                    <li class="nav-item"><a class="nav-link" href="../pages/visit.html"><i class="fas fa-calendar-check"></i> Visits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/update.html"><i class="fas fa-edit"></i> Outcomes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/dashboard.html"><i class="fas fa-chart-line"></i> Dashboards</a></li> 
+                    <li class="nav-item"><a class="nav-link active" href="../pages/events.html"><i class="fas fa-calendar-alt"></i> Events</a></li> 
+                    <li class="nav-item"><a class="nav-link" href="../pages/payments.html"><i class="fas fa-money-bill-wave"></i> Payments</a></li> 
+                    <li class="nav-item"><a class="nav-link" href="../index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>      
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1><i class="fas fa-calendar-alt"></i> Events Management</h1>
+        <p>Create and manage church events, track member attendance and check-ins</p>
+    </div>
+    
+
+    <div class="container">
+        <!-- Message Container -->
+        <div id="errorMessageContainer" style="display: none;" class="error-toast">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-bar">
+            <button type="button" id="createEventBtn" class="btn-primary-action"><i class="fas fa-plus-circle"></i> Create New Event</button>
+            <button type="button" id="refreshEventsBtn" class="btn-secondary-action"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+
+        <!-- Events List Section -->
+        <div class="events-section">
+            <div class="section-header">
+                <h3><i class="fas fa-calendar-week"></i> Upcoming & Past Events</h3>
+                <span id="eventCountBadge" class="badge-count">0 events</span>
+            </div>
+            <div id="eventsList" class="events-grid">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>No events created yet. Click "Create New Event" to get started.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Event Modal -->
+    <div id="eventModal" class="custom-modal">
+        <div class="modal-card modal-card-medium">
+            <div class="modal-header-custom">
+                <h5 id="eventModalTitle"><i class="fas fa-calendar-plus"></i> Create New Event</h5>
+                <button class="close-modal-btn" id="closeEventModalBtn">&times;</button>
+            </div>
+            <form id="eventForm">
+                <div class="modal-body-custom">
+                    <input type="hidden" id="editEventId" value="">
+                    
+                    <div class="form-group-modern">
+                        <label>Event Name / Title *</label>
+                        <input type="text" id="eventName" class="form-control-modern" placeholder="e.g., Sunday Service, Lekgotla la Baruti, Mpogo" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-modern half-width">
+                            <label>Event Type *</label>
+                            <select id="eventType" class="form-control-modern" required>
+                                <option value="">Select Event Type</option>
+                                <option value="sunday_service">Sunday Service</option>
+                                <option value="lekgotla_la_baruti">Lekgotla la Baruti</option>
+                                <option value="mpogo">Mpogo</option>
+                                <option value="meeting">Meeting</option>
+                                <option value="prayer_meeting">Prayer Meeting</option>
+                                <option value="youth_service">Youth Service</option>
+                                <option value="choir_practice">Choir Practice</option>
+                                <option value="conference">Conference</option>
+                                <option value="workshop">Workshop</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group-modern half-width">
+                            <label>Venue / Branch *</label>
+                            <select id="eventVenue" class="form-control-modern" required>
+                                <option value="">Select Venue</option>
+                                <option value="FP0">FP0</option>
+                                <option value="FP1">FP1</option>
+                                <option value="FP2">FP2</option>
+                                <option value="FP3">FP3</option>
+                                <option value="FP4">FP4</option>
+                                <option value="FP5">FP5</option>
+                                <option value="FP6">FP6</option>
+                                <option value="FP7">FP7</option>
+                                <option value="FP8">FP8</option>
+                                <option value="FP9">FP9</option>
+                                <option value="FP10">FP10</option>
+                                <option value="FP11">FP11</option>
+                                <option value="Main_Church">Main Church</option>
+                                <option value="Hall">Church Hall</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group-modern half-width">
+                            <label>Event Date *</label>
+                            <input type="date" id="eventDate" class="form-control-modern" required>
+                        </div>
+                        
+                        <div class="form-group-modern half-width">
+                            <label>Event Time</label>
+                            <input type="time" id="eventTime" class="form-control-modern">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group-modern">
+                        <label>Description</label>
+                        <textarea id="eventDescription" class="form-control-modern" rows="3" placeholder="Event details, agenda, special instructions..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn-secondary-modal" id="cancelEventBtn">Cancel</button>
+                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Details & Check-In Modal -->
+    <div id="eventDetailsModal" class="custom-modal modal-large">
+        <div class="modal-card modal-card-large">
+            <div class="modal-header-custom">
+                <h5 id="detailsEventTitle"><i class="fas fa-calendar-alt"></i> Event Details</h5>
+                <button class="close-modal-btn" id="closeDetailsModalBtn">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <div id="eventInfo" class="event-info-panel"></div>
+                
+<!-- Search Member for Check-In -->
+<div class="checkin-search-section">
+    <h6><i class="fas fa-user-plus"></i> Check-In Member</h6>
+    <div class="search-member-group" style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="text" id="memberSearchInput" class="search-member-input" placeholder="Search member by name, PIN, or contact..." style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 8px;">
+        <button type="button" id="searchMemberBtn" class="btn-search-member" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+    <div id="memberSearchResults" class="member-search-results" style="display: none;"></div>
+</div>
+                
+                <!-- Checked-In Members List -->
+                <div class="checkedin-members-section">
+                    <h6><i class="fas fa-check-circle"></i> Checked-In Members <span id="checkedInCount" class="badge-small">0</span></h6>
+                    <div id="checkedInMembersList" class="checkedin-members-list">
+                        <div class="empty-small">No members checked in yet</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn-secondary-modal" id="closeDetailsFooterBtn">Close</button>
+                <button type="button" id="exportEventAttendanceBtn" class="btn-save"><i class="fas fa-file-csv"></i> Export Attendance</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteEventModal" class="custom-modal">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header-custom" style="background: linear-gradient(135deg, #dc3545, #b02a37);">
+                <h5><i class="fas fa-exclamation-triangle"></i> Delete Event</h5>
+                <button class="close-modal-btn" id="closeDeleteEventModalBtn">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <p>Are you sure you want to delete this event? This will also remove all attendance records for this event.</p>
+                <p><strong id="deleteEventName"></strong></p>
+                <div class="form-group-modern">
+                    <label>Type "DELETE" to confirm:</label>
+                    <input type="text" id="deleteEventConfirmation" class="form-control-modern" placeholder="Type DELETE">
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn-secondary-modal" id="cancelDeleteEventBtn">Cancel</button>
+                <button type="button" class="btn-save" id="confirmDeleteEventBtn" style="background: linear-gradient(135deg, #dc3545, #b02a37);">Delete Event</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <i class="fas fa-heart"></i> Management System
+                </div>
+                <div class="footer-section">
+                    <span id="currentYear"></span> &copy; All Rights Reserved
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+<!-- Scripts - ORDER MATTERS! -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../config.public.js"></script>          <!-- ADD THIS FIRST -->
+<script src="../js/api-client.js"></script>
+<script src="../js/events-page.js"></script>
+
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                if (typeof api !== 'undefined') await api.logout();
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        }
+    </script>
+
+</body>
+</html>

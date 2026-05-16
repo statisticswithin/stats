@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Registration</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Register Page CSS -->
+    <link rel="stylesheet" href="../css/register-page.css">
+
+    <style>
+        /* Subsection styling */
+        .subsection-card {
+            background: linear-gradient(135deg, #f0f7f0, #e8f5e9);
+            border: 1.5px solid #a5d6a7;
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .subsection-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #c8e6c9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .subsection-title i {
+            font-size: 0.85rem;
+        }
+
+        /* Disabled field styling */
+        .form-control-modern:disabled {
+            background-color: #f5f5f5;
+            color: #aaa;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Branch auto-filled read-only display */
+        .branch-readonly-display {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 1rem;
+            background: rgba(46, 125, 50, 0.08);
+            border: 1.5px solid #a5d6a7;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1b5e20;
+            min-height: 42px;
+        }
+        .branch-readonly-display i {
+            color: #388e3c;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        /* Hint text below fields */
+        .field-hint {
+            font-size: 0.78rem;
+            color: #e53935;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .field-hint.visible {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // ========== AUTHENTICATION CHECK ==========
+        function checkAuthAndRedirect() {
+            const token = localStorage.getItem('auth_token');
+            const user  = localStorage.getItem('current_user');
+            if (!token || !user) {
+                const isInPages = window.location.pathname.includes('/pages/');
+                window.location.href = isInPages ? '../index.html' : 'index.html';
+                return false;
+            }
+            return true;
+        }
+        if (!checkAuthAndRedirect()) throw new Error('Authentication required');
+    </script>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../home.html">
+                <div class="logo-wrapper">
+                    <div class="church-icon">
+                        <img src="../images/emblem.png" class="church-emblem" alt="Church Emblem">
+                    </div>
+                    <span class="brand-text">Registration</span>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="../home.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="../pages/register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/visit.html"><i class="fas fa-calendar-check"></i> Visits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/update.html"><i class="fas fa-edit"></i> Outcomes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/dashboard.html"><i class="fas fa-chart-line"></i> Dashboards</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/events.html"><i class="fas fa-calendar-alt"></i> Events</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/payments.html"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1><i class="fas fa-user-plus"></i> Member Registration</h1>
+        <p>Register new members and update information</p>
+    </div>
+
+    <div class="container">
+        <!-- Message Container -->
+        <div id="errorMessageContainer" style="display: none;" class="error-toast">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+        </div>
+
+        <!-- Search Card -->
+        <div class="search-card">
+            <div class="search-header">
+                <i class="fas fa-filter"></i> Search Members
+            </div>
+            <div class="search-body">
+                <div class="search-input-group">
+                    <input type="text" id="globalSearchInput" class="search-input" placeholder="Search by name, PIN, or contact..." autocomplete="off">
+                    <button type="button" id="searchBtn" class="btn-outline-success-custom"><i class="fas fa-search"></i> Search</button>
+                    <button type="button" id="resetBtn" class="btn-clear"><i class="fas fa-undo-alt"></i> Clear</button>
+                    <button type="button" id="openRegisterModalBtn" class="btn-register"><i class="fas fa-user-plus"></i> Register Member</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold"><i class="fas fa-address-card"></i> Members Directory</h3>
+                <span id="memberCountBadge" class="badge bg-secondary rounded-pill px-3 py-2">0 members</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="membersTable">
+                    <thead>
+                        <tr>
+                            <th>Firstname</th>
+                            <th>Surname</th>
+                            <th>PIN</th>
+                            <th>Contact</th>
+                            <th>Branch</th>
+                            <th>Church Activity</th>
+                            <th>Kganya</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">Loading members...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register/Edit Member Modal -->
+    <div id="registerModal" class="custom-modal">
+        <div class="modal-card modal-card-three-quarters">
+            <div class="modal-header-custom">
+                <h5 id="registerModalTitle"><i class="fas fa-user-plus"></i> Register New Member</h5>
+                <button class="close-modal-btn" id="closeRegisterModalBtn">&times;</button>
+            </div>
+
+            <!-- Progress Steps Indicator -->
+            <div class="progress-steps">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Demographics</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Next of Kin</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Committee</div>
+                </div>
+                <div class="step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Skills</div>
+                </div>
+                <div class="step" data-step="5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Review & Save</div>
+                </div>
+            </div>
+
+            <form id="memberForm">
+                <div class="modal-body-custom modal-body-scrollable">
+                    <input type="hidden" id="editMemberId" value="">
+                    <input type="hidden" id="currentStep" value="1">
+
+                    <!-- ══════════════════════════════════════════
+                         Section 1: Demographics Information
+                    ══════════════════════════════════════════ -->
+                    <div class="form-section step-section" data-section="1">
+                        <div class="section-title">
+                            <i class="fas fa-user-friends"></i> Section 1: Demographics Information
+                        </div>
+
+                        <!-- ── Subsection: Join Method and Branch ── -->
+                        <div class="subsection-card">
+                            <div class="subsection-title">
+                                <i class="fas fa-code-branch"></i> Join Method and Branch
+                                <!-- NEW TOGGLE BUTTON: Allow manual branch selection -->
+                                <button type="button" id="toggleBranchOverrideBtn" class="btn-toggle-branch">
+                                    <i class="fas fa-exchange-alt"></i> Override Branch
+                                </button>
+                            </div>
+                            <div class="row">
+                                <!-- Branch Level: auto-filled from login, read-only -->
+                                <div class="col-md-6 form-group-modern">
+                                    <label>Branch Level</label>
+                                    <div class="branch-readonly-display" id="branch_level_display">
+                                        <i class="fas fa-layer-group"></i>
+                                        <span id="branch_level_text">Loading...</span>
+                                    </div>
+                                    <!-- Hidden input carries the value for form submission -->
+                                    <input type="hidden" id="branch_level" value="">
+                                </div>
+                                <!-- Branch: auto-filled from login, read-only -->
+                                <div class="col-md-6 form-group-modern">
+                                    <label>Branch</label>
+                                    <div class="branch-readonly-display" id="branch_display">
+                                        <i class="fas fa-church"></i>
+                                        <span id="branch_text">Loading...</span>
+                                    </div>
+                                    <!-- Hidden input carries the value for form submission -->
+                                    <input type="hidden" id="branch" value="">
+                                </div>
+                                <!-- Join Method: still user-selected per registration -->
+                                <div class="col-md-6 form-group-modern">
+                                    <label>Join Method *</label>
+                                    <select id="join_method" class="form-control-modern" required>
+                                        <option value="">Select Join Method</option>
+                                        <option value="baptism">Baptism</option>
+                                        <option value="member_child">Member Child</option>
+                                        <option value="convert">Converts</option>
+                                        <option value="transfer_in">Transfer In</option>
+                                        <option value="backslided">Backslided</option>
+                                        <option value="visitor">Visitor</option>
+                                    </select>
+                                </div>
+                                                            <!-- Church Activity -->
+                            <div class="col-md-6 form-group-modern">
+                                <label>Church Activity</label>
+                                <select id="church_activity" class="form-control-modern">
+                                    <option value="">Select Activity</option>
+                                    <option value="mokhukhu">Mokhukhu</option>
+                                    <option value="female_choir">Female Choir</option>
+                                    <option value="male_choir">Male Choir</option>
+                                    <option value="sunday_school">Sunday School</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <span class="field-hint" id="churchActivityHint">
+                                    <i class="fas fa-info-circle"></i> Not applicable for this member
+                                </span>
+                            </div>
+                            </div>
+                        </div>
+                        <!-- ── End Subsection ── -->
+
+                        <div class="row">
+                            <div class="col-md-6 form-group-modern">
+                                <label>Firstname *</label>
+                                <input type="text" id="firstname" class="form-control-modern" required>
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Middlename</label>
+                                <input type="text" id="middlename" class="form-control-modern">
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Surname *</label>
+                                <input type="text" id="surname" class="form-control-modern" required>
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Gender</label>
+                                <select id="gender" class="form-control-modern">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Date of Birth</label>
+                                <input type="date" id="date_of_birth" class="form-control-modern">
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>PIN (ID Number) *</label>
+                                <input type="text" id="pin" class="form-control-modern" required placeholder="Enter ID number (numbers only)">
+                            </div>
+
+                            <div class="col-md-6 form-group-modern">
+                                <label>Contact 1 *</label>
+                                <input type="tel" id="contact" class="form-control-modern" required placeholder="Enter phone number (numbers only)">
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Contact 2</label>
+                                <input type="tel" id="contact2" class="form-control-modern" placeholder="Enter phone number (numbers only)">
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Residential Address</label>
+                                <textarea id="residential_address" class="form-control-modern" rows="2" placeholder="Enter full residential address"></textarea>
+                            </div>
+
+                            <!-- Baptism Date -->
+                            <div class="col-md-6 form-group-modern">
+                                <label>Baptism Date</label>
+                                <input type="date" id="date_of_baptism" class="form-control-modern">
+                                <span class="field-hint" id="baptismHint">
+                                    <i class="fas fa-info-circle"></i> Not applicable for this member
+                                </span>
+                            </div>
+                        <!-- ── Subsection: Join Method and Branch ── -->
+                        <div class="subsection-card">
+                            <div class="subsection-title">
+                                <i class="fas fa-code-branch"></i> Join Method and Branch
+                            </div>
+                            <div class="row">
+                            <!-- Pays Kganya -->
+                            <div class="col-md-6 form-group-modern">
+                                <label>Pays Kganya?</label>
+                                    <select id="kganya_member" class="form-control-modern">    
+                                        <option value="">Select</option>                                
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                    </select>
+                                    <span class="field-hint" id="kganyaMemberHint">
+                                        <i class="fas fa-info-circle"></i> Indicates if the member pays Kganya contributions
+                                    </span>
+                                <span class="field-hint" id="kganyaMemberHint">
+                                    <i class="fas fa-info-circle"></i> Not applicable for this member
+                                </span>
+                            </div>
+
+                            <!-- Kganya Book Number -->
+                            <div class="col-md-6 form-group-modern">
+                                <label>Kganya Book Number</label>
+                                <input type="text" id="kganya_book_number" class="form-control-modern" placeholder="Enter book number">
+                                <span class="field-hint" id="kganyaNumberHint">
+                                    <i class="fas fa-info-circle"></i> Not applicable for this member
+                                </span>
+                            </div></div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Next of Kin Information -->
+                    <div class="form-section step-section" data-section="2" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-heart"></i> Section 2: Next of Kin Information
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 form-group-modern">
+                                <label>Next of Kin Firstname</label>
+                                <input type="text" id="nok_firstname" class="form-control-modern">
+                            </div>
+                            <div class="col-md-4 form-group-modern">
+                                <label>Next of Kin Surname</label>
+                                <input type="text" id="nok_surname" class="form-control-modern">
+                            </div>
+                            <div class="col-md-4 form-group-modern">
+                                <label>Next of Kin Contact</label>
+                                <input type="tel" id="nok_contact" class="form-control-modern">
+                            </div>
+                            <div class="col-md-12 form-group-modern">
+                                <label>Relationship</label>
+                                <select id="nok_relationship" class="form-control-modern">
+                                    <option value="">Select Relationship</option>
+                                    <option value="spouse">Spouse</option>
+                                    <option value="parent">Parent</option>
+                                    <option value="cousin">Cousin</option>
+                                    <option value="child">Child</option>
+                                    <option value="sibling">Sibling</option>
+                                    <option value="guardian">Guardian</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Committee Information -->
+                    <div class="form-section step-section" data-section="3" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-users"></i> Section 3: Committee Information
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 form-group-modern">
+                                <label>
+                                    <input type="checkbox" id="in_executive_committee"> In Executive Committee?
+                                </label>
+                            </div>
+                            <div class="col-md-6 form-group-modern" id="executive_committee_group" style="display:none;">
+                                <label>Executive Committee</label>
+                                <select id="executive_committee" class="form-control-modern">
+                                    <option value="">Select Committee</option>
+                                    <option value="church_council">Church Council (20 Men)</option>
+                                    <option value="lcdc">LCDC</option>
+                                    <option value="dptt">DPTT</option>
+                                    <option value="youth_committee">Youth Committee</option>
+                                    <option value="women_committee">Women's Committee</option>
+                                    <option value="chamber_of_commerce">Chamber of Commerce Committee</option>
+                                    <option value="sunday_school_committee">Sunday School Committee</option>
+                                    <option value="Scholarship">Scholarship</option>
+                                    <option value="Minister">Minister</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group-modern" id="executive_committee_role_group" style="display:none;">
+                                <label>Executive Committee Role</label>
+                                <select id="executive_committee_role" class="form-control-modern">
+                                    <option value="">Select Role</option>
+                                    <option value="Branch_head">Head</option>
+                                    <option value="Branch_vicehead">Vice Head</option>
+                                    <option value="Chairman">Chair</option>
+                                    <option value="Vice_chairman">Vice chair</option>
+                                    <option value="Secretary">Secretary</option>
+                                    <option value="Vice_secretary">Vice Secretary</option>
+                                    <option value="Additional_secretary">Additional Secretary</option>
+                                    <option value="Treasurer">Treasurer</option>
+                                    <option value="Vice_Treasurer">Vice Treasurer</option>
+                                    <option value="Key_man">Key men</option>
+                                    <option value="Vice_keyman">Vice Key men</option>
+                                    <option value="Second_ten">Second Ten</option>
+                                    <option value="Teacher">Teacher</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Skills Set -->
+                    <div class="form-section step-section" data-section="4" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-cogs"></i> Section 4: Skills Set
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group-modern">
+                                <label>Employment Status</label>
+                                <select id="employment_status" class="form-control-modern">
+                                    <option value="">Select Status</option>
+                                    <option value="employed">Employed</option>
+                                    <option value="self_employed">Self-Employed</option>
+                                    <option value="unemployed">Unemployed</option>
+                                    <option value="student">Student</option>
+                                    <option value="retired">Retired</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Occupation</label>
+                                <input type="text" id="occupation" class="form-control-modern" placeholder="Current job title">
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Education Level</label>
+                                <select id="education_level" class="form-control-modern">
+                                    <option value="">Select Level</option>
+                                    <option value="primary">Primary School</option>
+                                    <option value="secondary">Secondary School</option>
+                                    <option value="certificate">Certificate</option>
+                                    <option value="diploma">Diploma</option>
+                                    <option value="degree">Bachelor's Degree</option>
+                                    <option value="postgraduate">Postgraduate Degree</option>
+                                    <option value="masters">Master's Degree</option>
+                                    <option value="doctorate">Doctorate</option>
+                                    <option value="in_progress">In-Progress</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group-modern">
+                                <label>Highest Certification</label>
+                                <input type="text" id="highest_certification" class="form-control-modern" placeholder="e.g., Grade 12, Bachelor's, etc.">
+                            </div>
+                            <div class="col-md-12 form-group-modern">
+                                <label>Qualification</label>
+                                <input type="text" id="qualification" class="form-control-modern" placeholder="Degree/Certificate name">
+                            </div>
+                            <div class="col-md-12 form-group-modern">
+                                <label>Skills</label>
+                                <textarea id="skills" class="form-control-modern" rows="2" placeholder="List your skills (e.g., Teaching, IT, Accounting, Plumbing)"></textarea>
+                            </div>
+                            <div class="col-md-12 form-group-modern">
+                                <label>Formally Trained on Skills?</label>
+                                <select id="formally_trained_on_skills" class="form-control-modern">
+                                    <option value="">Select</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                    <option value="in_progress">In Progress</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Review & Save -->
+                    <div class="form-section step-section" data-section="5" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-clipboard-list"></i> Section 5: Review & Save
+                        </div>
+                        <div class="review-section">
+                            <div class="review-content" id="reviewContent">
+                                <!-- Dynamic review content will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="modal-footer-custom navigation-buttons">
+                    <button type="button" class="btn-secondary-modal" id="prevBtn" style="display: none;">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button type="button" class="btn-primary-modal" id="nextBtn">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button type="submit" class="btn-save" id="saveBtn" style="display: none;">
+                        <i class="fas fa-save"></i> Save Member
+                    </button>
+                    <button type="button" class="btn-secondary-modal" id="cancelFormBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="custom-modal">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header-custom" style="background: linear-gradient(135deg, #dc3545, #b02a37);">
+                <h5><i class="fas fa-exclamation-triangle"></i> Delete Member - Warning!</h5>
+                <button class="close-modal-btn" id="closeDeleteModalBtn">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 4rem; color: #dc3545;"></i>
+                    <h3 class="text-danger mt-3">⚠️ This Action Cannot Be Undone!</h3>
+                    <p class="mt-2">You are about to permanently delete a member from the church registry. All member data will be lost forever.</p>
+                </div>
+                <div class="member-details-card" id="memberDetailsCard" style="background: #f8f9fa; border-radius: 12px; padding: 1rem; margin: 1rem 0;">
+                    <h6><i class="fas fa-user"></i> Member to be deleted:</h6>
+                    <div id="deleteMemberInfo"></div>
+                </div>
+                <div class="form-group-modern">
+                    <label>Type "CONFIRM DELETE" to proceed:</label>
+                    <input type="text" id="deleteConfirmationInput" class="form-control-modern" placeholder="Type CONFIRM DELETE">
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn-secondary-modal" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn-save" id="confirmDeleteBtn" style="background: linear-gradient(135deg, #dc3545, #b02a37);">Permanently Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <i class="fas fa-heart"></i> Management System
+                </div>
+                <div class="footer-section">
+                    <span id="currentYear"></span> &copy; All Rights Reserved
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts - ORDER MATTERS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../config.public.js"></script>
+    <script src="../js/api-client.js"></script>
+    <script src="../js/register-page.js"></script>
+
+    <!-- ══════════════════════════════════════════
+         Join Method → field disable/enable logic
+
+         Rules:
+           member_child → disable: baptism date, kganya, kganya book number
+           visitor      → disable: baptism date, church activity, kganya, kganya book number
+           all others   → enable everything
+    ══════════════════════════════════════════ -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ── Element references ──────────────────────────────────
+            const joinMethod         = document.getElementById('join_method');
+            const baptismDate        = document.getElementById('date_of_baptism');
+            const churchActivity     = document.getElementById('church_activity');
+            const kganyaMember       = document.getElementById('kganya_member');
+            const kganyaBookNumber   = document.getElementById('kganya_book_number');
+
+            const baptismHint        = document.getElementById('baptismHint');
+            const churchActivityHint = document.getElementById('churchActivityHint');
+            const kganyaMemberHint   = document.getElementById('kganyaMemberHint');
+            const kganyaNumberHint   = document.getElementById('kganyaNumberHint');
+
+            // ── Helper: disable a field and show its hint ───────────
+            function disableField(field, hint) {
+                field.value    = '';
+                field.disabled = true;
+                if (hint) hint.classList.add('visible');
+            }
+
+            // ── Helper: enable a field and hide its hint ────────────
+            function enableField(field, hint) {
+                field.disabled = false;
+                if (hint) hint.classList.remove('visible');
+            }
+
+            // ── Main handler ────────────────────────────────────────
+            function handleJoinMethodChange() {
+                const val           = joinMethod.value;
+                const isMemberChild = val === 'member_child';
+                const isVisitor     = val === 'visitor';
+
+                // Baptism Date: disabled for member_child & visitor
+                if (isMemberChild || isVisitor) {
+                    disableField(baptismDate, baptismHint);
+                } else {
+                    enableField(baptismDate, baptismHint);
+                }
+
+                // Church Activity: disabled for visitor only
+                if (isVisitor) {
+                    disableField(churchActivity, churchActivityHint);
+                } else {
+                    enableField(churchActivity, churchActivityHint);
+                }
+
+                // Kganya fields: disabled for member_child & visitor
+                if (isMemberChild || isVisitor) {
+                    disableField(kganyaMember, kganyaMemberHint);
+                    disableField(kganyaBookNumber, kganyaNumberHint);
+                } else {
+                    enableField(kganyaMember, kganyaMemberHint);
+                    enableField(kganyaBookNumber, kganyaNumberHint);
+                }
+            }
+
+            // Attach listener and run once on load (handles pre-populated edit mode)
+            if (joinMethod) {
+                joinMethod.addEventListener('change', handleJoinMethodChange);
+                handleJoinMethodChange();
+            }
+        });
+    </script>
+
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                if (typeof api !== 'undefined') await api.logout();
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        }
+    </script>
+</body>
+</html>

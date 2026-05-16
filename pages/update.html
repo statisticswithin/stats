@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ZCC FP01 Church Statistics | Update Member Status</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Update Page CSS -->
+    <link rel="stylesheet" href="../css/update-page.css">
+</head>
+<body>
+<script>
+    function checkAuthAndRedirect() {
+        const token = localStorage.getItem('auth_token');
+        const user = localStorage.getItem('current_user');
+        if (!token || !user) {
+            window.location.href = '../index.html';
+            return false;
+        }
+        return true;
+    }
+    if (!checkAuthAndRedirect()) throw new Error('Authentication required');
+</script>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <div class="logo-wrapper">
+                    <div class="church-icon">
+                        <img src="../images/emblem.png" class="church-emblem" alt="Church Emblem">
+                    </div>
+                    <span class="brand-text">Outcomes</span>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="../home.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/visit.html"><i class="fas fa-calendar-check"></i> Visits</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="../pages/update.html"><i class="fas fa-edit"></i> Outcomes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/dashboard.html"><i class="fas fa-chart-line"></i> Dashboards</a></li> 
+                    <li class="nav-item"><a class="nav-link" href="../pages/events.html"><i class="fas fa-calendar-alt"></i> Events</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/payments.html"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>      
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1><i class="fas fa-edit"></i> Update Member Status</h1>
+        <p>Update member outcomes, transfer members, and manage church records</p>
+    </div>
+
+    <div class="container">
+        <!-- Message Container -->
+        <div id="errorMessageContainer" style="display: none;" class="error-toast">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+        </div>
+
+        <!-- Search Card -->
+        <div class="search-card">
+            <div class="search-header">
+                <i class="fas fa-filter"></i> Search Members
+            </div>
+            <div class="search-body">
+                <div class="search-input-group">
+                    <input type="text" id="globalSearchInput" class="search-input" placeholder="Search by name, PIN, or contact..." autocomplete="off">
+                    <button type="button" id="searchBtn" class="btn-outline-success-custom"><i class="fas fa-search"></i> Search</button>
+                    <button type="button" id="resetBtn" class="btn-clear"><i class="fas fa-undo-alt"></i> Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members Table -->
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold"><i class="fas fa-address-card"></i> Members Directory</h3>
+                <span id="memberCountBadge" class="badge bg-secondary rounded-pill px-3 py-2">0 members</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="membersTable">
+                    <thead>
+                        <tr>
+                            <th>Firstname</th><th>Surname</th><th>PIN</th><th>Contact</th>
+                            <th>Branch</th><th>Status</th><th>Kganya</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Update Modal -->
+    <div id="statusModal" class="custom-modal">
+        <div class="modal-card modal-card-update">
+            <div class="modal-header-custom">
+                <h5><i class="fas fa-chart-line"></i> Update Member Status</h5>
+                <button class="close-modal-btn" id="closeStatusModalBtn">&times;</button>
+            </div>
+            <form id="statusForm">
+                <div class="modal-body-custom modal-body-scrollable">
+                    <input type="hidden" id="statusMemberId" name="memberId">
+                    
+                    <!-- Member Info Display -->
+                    <div class="member-info-card" id="memberInfoDisplay">
+                        <h6><i class="fas fa-user"></i> Selected Member:</h6>
+                        <div id="selectedMemberInfo"></div>
+                    </div>
+                    
+                    <div class="form-group-modern">
+                        <label>Member Outcome *</label>
+                        <select id="memberOutcome" class="form-control-modern" required>
+                            <option value="">-- Select Outcome --</option>
+                            <option value="active">Active</option>
+                            <option value="converts">Converts</option>
+                            <option value="backslided">Backslided</option>
+                            <option value="deceased">Deceased</option>
+                            <option value="transfer_out">Transfer Out</option>
+                            <option value="transfer_in">Transfer In</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Transfer Out Group -->
+                    <div class="form-group-modern" id="transferredToGroup" style="display:none;">
+                        <label>Transfer To (Branch)</label>
+                        <select id="receivingBranch" class="form-control-modern">
+                            <option value="">-- Select branch --</option>
+                            <option value="FP0">FP0</option>
+                            <option value="FP1">FP1</option>
+                            <option value="FP2">FP2</option>
+                            <option value="FP3">FP3</option>
+                            <option value="FP4">FP4</option>
+                            <option value="FP5">FP5</option>
+                            <option value="FP6">FP6</option>
+                            <option value="FP7">FP7</option>
+                            <option value="FP8">FP8</option>
+                            <option value="FP9">FP9</option>
+                            <option value="FP10">FP10</option>
+                            <option value="FP11">FP11</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Transfer In Group -->
+                    <div class="form-group-modern" id="transferredFromGroup" style="display:none;">
+                        <label>Transfer From (Branch)</label>
+                        <select id="sendingBranch" class="form-control-modern">
+                            <option value="">-- Select branch --</option>
+                            <option value="FP0">FP0</option>
+                            <option value="FP1">FP1</option>
+                            <option value="FP2">FP2</option>
+                            <option value="FP3">FP3</option>
+                            <option value="FP4">FP4</option>
+                            <option value="FP5">FP5</option>
+                            <option value="FP6">FP6</option>
+                            <option value="FP7">FP7</option>
+                            <option value="FP8">FP8</option>
+                            <option value="FP9">FP9</option>
+                            <option value="FP10">FP10</option>
+                            <option value="FP11">FP11</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Convert From Group -->
+                    <div class="form-group-modern" id="convertFromGroup">
+                        <label>Convert From</label>
+                        <select id="convertFrom" class="form-control-modern">
+                            <option value="">-- Select --</option>
+                            <option value="stengenas">St. Engenas</option>
+                            <option value="backslider">Backslider</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group-modern">
+                        <label id="dateOfStatusLabel">Outcome Date</label>
+                        <input type="date" id="dateOfStatus" class="form-control-modern" required>
+                    </div>
+                    
+                    <div class="form-group-modern">
+                        <label>Additional Notes</label>
+                        <textarea id="statusNotes" class="form-control-modern" rows="3" placeholder="Add any additional notes about this status change..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn-secondary-modal" id="cancelStatusBtn">Cancel</button>
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== HISTORY MODAL - ADD THIS ========== -->
+    <div id="historyModal" class="custom-modal">
+        <div class="modal-card modal-card-large">
+            <div class="modal-header-custom">
+                <h5 id="historyModalTitle"><i class="fas fa-history"></i> Outcome History</h5>
+                <button class="close-modal-btn" id="closeHistoryModalBtn">&times;</button>
+            </div>
+            <div class="modal-body-custom modal-body-scrollable">
+                <div id="historyList" class="history-list">
+                    <div class="history-loading">
+                        <i class="fas fa-spinner fa-pulse"></i><br>
+                        Loading outcome history...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn-secondary-modal" id="cancelHistoryBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <i class="fas fa-heart"></i> Kganya Church Management System
+                </div>
+                <div class="footer-section">
+                    <span id="currentYear"></span> &copy; All Rights Reserved
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../config.public.js"></script>
+    <script src="../js/api-client.js"></script>
+    <script src="../js/update-page.js"></script>
+    
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                if (typeof api !== 'undefined') await api.logout();
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        }
+    </script>
+</body>
+</html>

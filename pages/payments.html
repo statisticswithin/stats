@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Management</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Payments Page Styles -->
+    <link rel="stylesheet" href="../css/payments-page.css">
+</head>
+<body>
+    <script>
+        // ========== AUTHENTICATION CHECK ==========
+        function checkAuthAndRedirect() {
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('current_user');
+    
+    if (!token || !user) {
+        const isInPages = window.location.pathname.includes('/pages/');
+        window.location.href = isInPages ? '../index.html' : 'index.html';
+        return false;
+    }
+    return true;
+}
+if (!checkAuthAndRedirect()) throw new Error('Authentication required');
+    </script>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <div class="logo-wrapper">
+                    <div class="church-icon">
+                        <img src="../images/emblem.png" class="church-emblem" alt="Church Emblem">
+                    </div>
+                    <span class="brand-text">Payments</span>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="../home.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/visit.html"><i class="fas fa-calendar-check"></i> Visits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/update.html"><i class="fas fa-edit"></i> Outcomes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/dashboard.html"><i class="fas fa-chart-line"></i> Dashboards</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/events.html"><i class="fas fa-calendar-alt"></i> Events</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="../pages/payments.html"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1><i class="fas fa-money-bill-wave"></i> Payment Management</h1>
+                <p>Manage member payments for trips, services, and church activities</p>
+            </div>
+        </div>
+
+        <!-- Message Area -->
+        <div id="messageArea" style="display: none;" class="alert-message"></div>
+
+        <!-- Split Layout -->
+        <div class="split-layout">
+            <!-- Left Side: Search Members -->
+            <div class="search-section">
+                <div class="search-card">
+                    <div class="search-header">
+                        <i class="fas fa-search"></i> Find Member
+                    </div>
+                    <div class="search-body">
+                        <div class="search-controls">
+                            <div class="search-input-group">
+                                <input type="text" id="searchInput" class="search-input" placeholder="Search by name, PIN, or contact..." autocomplete="off">
+                                <button class="btn-search" id="searchMembersBtn" title="Search">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                <button class="btn-clear" id="clearSearchBtn" title="Clear Search">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                                <button class="btn-refresh" id="refreshDataBtn" title="Refresh Data">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <h6><i class="fas fa-filter"></i> Filter Payments</h6>
+                        <div class="filter-controls">
+                            <div class="filter-group">
+                                <label>Filter by Trip</label>
+                                <select id="tripFilter" class="form-control-modern">
+                                    <option value="">All Trips</option>
+                                    <option value="funeral">Funeral</option>
+                                    <option value="lekgotla">Lekgotla</option>
+                                    <option value="easters">Easters</option>
+                                    <option value="new_year">New Year (Sept)</option>
+                                    <option value="christmas">Christmas</option>
+                                    <option value="feela">Feela (Umshanyelo)</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Filter by Date</label>
+                                <input type="date" id="dateFilter" class="form-control-modern">
+                            </div>
+                            <div class="filter-group">
+                                <label>&nbsp;</label>
+                                <button id="resetFiltersBtn" class="btn-secondary">
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="searchResults" style="display: none; margin-top: 1.5rem;">
+                    <div class="search-results-header">
+                        <h5><i class="fas fa-users"></i> Search Results</h5>
+                        <button class="btn-close-results" id="closeResultsBtn" title="Close Results">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="membersList" style="max-height: 500px; overflow-y: auto;"></div>
+                </div>
+            </div>
+
+            <!-- Right Side: Payment Summary & Recent Payments -->
+            <div class="payments-section">
+                <!-- Payment Summary Card -->
+                <div class="summary-card">
+                    <h5><i class="fas fa-chart-line"></i> Payment Summary</h5>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-number" id="totalPayments">R0</div>
+                            <div class="summary-label">Total Payments</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number" id="membersWithPayments">0</div>
+                            <div class="summary-label">Members Paid</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number" id="eastersTotal">R0</div>
+                            <div class="summary-label">Easters Trip</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number" id="newYearTotal">R0</div>
+                            <div class="summary-label">New Year</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number" id="otherTotal">R0</div>
+                            <div class="summary-label">Other Services</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="statistics-section">
+                    <div class="statistics-card">
+                        <div class="statistics-header">
+                            <h5><i class="fas fa-chart-pie"></i> Payment Statistics</h5>
+                        </div>
+                        <div class="statistics-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalOwedAmount">R0</div>
+                                <div class="stat-label">Total Pending Amount</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="fullyPaidCount">0</div>
+                                <div class="stat-label">Fully Paid Members</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="notDepositedCount">0</div>
+                                <div class="stat-label">No Deposit Made</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="partialPaymentCount">0</div>
+                                <div class="stat-label">Partial Payment</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; text-align: center;">
+                            <button class="btn-view-report" id="viewPaymentStatusBtn">
+                                <i class="fas fa-users"></i> View Payment Status Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Payments List -->
+                <div class="payments-container">
+                    <h5><i class="fas fa-clock"></i> Recent Payments</h5>
+                    <div id="paymentsList">
+                        <div class="empty-state">
+                            <i class="fas fa-receipt" style="font-size: 3rem;"></i>
+                            <p>No payments recorded yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Make Payment -->
+    <div id="paymentModal" class="custom-modal">
+        <div class="modal-card">
+            <div class="modal-header-custom">
+                <h5><i class="fas fa-money-bill-wave"></i> <span id="modalMemberName">Make Payment</span></h5>
+                <button class="close-modal-btn" id="closePaymentModalBtn">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="paymentMemberId">
+                
+                <div class="form-group-modern">
+                    <label><i class="fas fa-bus"></i> Service / Trip</label>
+                    <select id="serviceType" class="form-control-modern">
+                        <option value="funeral">Funeral (R100)</option>
+                        <option value="lekgotla">Lekgotla (R100)</option>
+                        <option value="easters">Easters (R650)</option>
+                        <option value="new_year">New Year (Sept) (R650)</option>
+                        <option value="christmas">Christmas (R650)</option>
+                        <option value="feela">Feela (Umshanyelo) (R650)</option>
+                    </select>
+                </div>
+                
+                <div id="customAmount" style="display: none;" class="form-group-modern">
+                    <label><i class="fas fa-coins"></i> Total Amount (R)</label>
+                    <input type="number" id="customAmountInput" class="form-control-modern" placeholder="Enter total amount" step="0.01" min="0">
+                </div>
+                
+                <div class="form-group-modern">
+                    <label><i class="fas fa-wallet"></i> Payment Amount (R)</label>
+                    <input type="number" id="paymentAmount" class="form-control-modern" placeholder="Enter payment amount" step="0.01" min="0" required>
+                </div>
+                
+                <div class="form-group-modern">
+                    <label><i class="fas fa-tag"></i> Payment Type</label>
+                    <select id="paymentType" class="form-control-modern">
+                        <option value="deposit">Deposit</option>
+                        <option value="full">Full Payment</option>                        
+                        <option value="final">Final Payment</option>
+                    </select>
+                </div>
+                
+                <div class="form-group-modern">
+                    <label><i class="fas fa-calendar"></i> Payment Date</label>
+                    <input type="date" id="paymentDate" class="form-control-modern" required>
+                </div>
+                
+                <div class="form-group-modern">
+                    <label><i class="fas fa-sticky-note"></i> Notes (Optional)</label>
+                    <textarea id="paymentNotes" class="form-control-modern" rows="2" placeholder="Add any additional notes..."></textarea>
+                </div>
+                
+                <div class="total-amount-display">
+                    <i class="fas fa-calculator"></i> Total Amount: <span id="totalAmount">R650</span>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn-secondary-modal" id="cancelPaymentBtn">Cancel</button>
+                <button class="btn-primary-modal" id="confirmPaymentBtn">Record Payment</button>
+            </div>
+            <div id="existingBalanceDisplay" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Modal: View Member Payments -->
+    <div id="viewPaymentsModal" class="custom-modal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header-custom">
+                <h5><i class="fas fa-history"></i> Payment History</h5>
+                <button class="close-modal-btn" id="closeViewModalBtn">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <div id="memberPaymentsList"></div>
+            </div>
+            <div class="modal-footer-custom">
+                <button class="btn-secondary-modal" id="closeViewModalFooterBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+<!-- Modal: Payment Status Report -->
+<div id="paymentStatusModal" class="custom-modal">
+    <div class="modal-card modal-lg">
+        <div class="modal-header-custom">
+            <h5><i class="fas fa-chart-bar"></i> Member Payment Status Report</h5>
+            <button class="close-modal-btn" id="closeStatusModalBtn">&times;</button>
+        </div>
+        <div class="modal-body-custom">
+            <!-- FILTERS SECTION -->
+            <div style="margin-bottom: 1.5rem;">
+                <h6 style="color: #025205; margin-bottom: 1rem; font-weight: 700;">
+                    <i class="fas fa-filter"></i> Filter Options
+                </h6>
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    <div style="flex: 1; min-width: 180px;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #025205; margin-bottom: 0.25rem;">
+                            <i class="fas fa-bus"></i> Trip
+                        </label>
+                        <select id="reportTripFilter" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 8px; background: white;">
+                            <option value="">-- All Trips --</option>
+                            <option value="funeral">Funeral (R100)</option>
+                            <option value="lekgotla">Lekgotla (R100)</option>
+                            <option value="easters">Easters (R650)</option>
+                            <option value="new_year">New Year (Sept) (R650)</option>
+                            <option value="christmas">Christmas (R650)</option>
+                            <option value="feela">Feela (Umshanyelo) (R650)</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 1; min-width: 150px;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #025205; margin-bottom: 0.25rem;">
+                            <i class="fas fa-venus-mars"></i> Gender
+                        </label>
+                        <select id="reportGenderFilter" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 8px; background: white;">
+                            <option value="">-- All Genders --</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #025205; margin-bottom: 0.25rem;">
+                            <i class="fas fa-credit-card"></i> Payment Status (Multi-Select)
+                        </label>
+                        <select id="reportPaymentStatusFilter" multiple style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 8px; background: white; min-height: 70px;">
+                            <option value="fully_paid">Fully Paid</option>
+                            <option value="deposited">Deposit Made</option>
+                        </select>
+                        <small style="font-size: 0.7rem; color: #666;">Hold Ctrl/Cmd to select multiple</small>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-end; gap: 0.5rem;">
+                        <button id="applyReportFiltersBtn" style="padding: 0.5rem 1.5rem; background: #025205; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-search"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RESULTS TABLE -->
+            <div style="overflow-x: auto; max-height: 500px;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden;">
+                    <thead style="background: #025205; color: white;">
+                        <tr>
+                            <th style="padding: 0.75rem; text-align: left;">Name</th>
+                            <th style="padding: 0.75rem; text-align: left;">Gender</th>
+                            <th style="padding: 0.75rem; text-align: left;">PIN</th>
+                            <th style="padding: 0.75rem; text-align: left;">Contact</th>
+                            <th style="padding: 0.75rem; text-align: left;">Trip</th>
+                            <th style="padding: 0.75rem; text-align: left;">Total Amount</th>
+                            <th style="padding: 0.75rem; text-align: left;">Total Paid</th>
+                            <th style="padding: 0.75rem; text-align: left;">Balance</th>
+                            <th style="padding: 0.75rem; text-align: left;">Status</th>
+                            <th style="padding: 0.75rem; text-align: left;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentStatusTableBody">
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 2rem; color: #666;">
+                                <i class="fas fa-info-circle"></i> Select filters and click Apply Filters to see results...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer-custom">
+            <button class="btn-secondary-modal" id="closeStatusModalFooterBtn">Close</button>
+            <button class="btn-primary-modal" id="exportReportBtn">
+                <i class="fas fa-download"></i> Export to CSV
+            </button>
+        </div>
+    </div>
+</div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <i class="fas fa-heart"></i> Management System
+                </div>
+                <div class="footer-section">
+                    <span id="currentYear"></span> &copy; All Rights Reserved
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../config.public.js"></script>
+    <script src="../js/api-client.js"></script>
+    <script src="../js/payments-page.js"></script>
+
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                if (typeof api !== 'undefined') await api.logout();
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        }
+    </script>
+</body>
+</html>

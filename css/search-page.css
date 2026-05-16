@@ -1,0 +1,317 @@
+/* === KGANYA SEARCH PAGE STYLES === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f4f7f4;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
+    line-height: 1.5;
+}
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+
+/* ========== NAVBAR STYLES ========== */
+.navbar {
+    background-color: #025205;
+    padding: 0.85rem 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.65rem;
+    letter-spacing: -0.3px;
+    color: white !important;
+}
+
+.navbar-brand i {
+    margin-right: 8px;
+    color: #c8f0c6;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    transition: 0.2s;
+    margin: 0 6px;
+}
+
+.nav-link:hover {
+    color: white !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    transform: translateY(-1px);
+}
+
+/* ========== HERO SECTION ========== */
+.hero-section {
+    background: linear-gradient(135deg, #025205 0%, #038b0a 100%);
+    color: white;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.hero-section h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.hero-section p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+/* ========== SEARCH CARD ========== */
+.search-card {
+    max-width: 800px;
+    margin: -1.5rem auto 1.8rem auto;
+    background: white;
+    border-radius: 60px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+}
+
+.search-input-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-input-group input {
+    flex: 1;
+    border: none;
+    padding: 12px 5px;
+    font-size: 1rem;
+    outline: none;
+    background: transparent;
+}
+
+.btn-outline-success-custom {
+    background-color: #025205;
+    border: none;
+    color: white;
+    border-radius: 40px;
+    padding: 8px 22px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-outline-success-custom:hover {
+    background-color: #036f08;
+    transform: scale(0.97);
+}
+
+.btn-clear {
+    background-color: #6c757d;
+    border: none;
+    color: white;
+    border-radius: 40px;
+    padding: 8px 22px;
+}
+
+.btn-register {
+    background-color: #ffb74d;
+    border: none;
+    color: #2c3e2b;
+    font-weight: 600;
+    border-radius: 40px;
+    padding: 8px 24px;
+}
+
+.btn-register:hover {
+    background-color: #ffa01e;
+    color: #1a3a18;
+}
+
+/* ========== TABLE STYLES ========== */
+.table-container {
+    background: white;
+    border-radius: 28px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.2rem;
+    margin-bottom: 3rem;
+}
+
+.table thead th {
+    background-color: #025205;
+    color: white;
+    font-weight: 600;
+    border-bottom: none;
+    padding: 14px 12px;
+    font-size: 0.9rem;
+}
+
+.table tbody tr:hover {
+    background-color: #f8fff4;
+    transition: 0.1s;
+}
+
+.badge-kganya {
+    background-color: #e9ecef;
+    color: #025205;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+}
+
+.action-buttons .btn-sm {
+    border-radius: 30px;
+    margin: 2px 3px;
+    font-size: 0.75rem;
+    padding: 5px 12px;
+}
+
+/* ========== MODAL STYLES ========== */
+.custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.55);
+    z-index: 1060;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+
+.modal-card {
+    background: #ffffff;
+    width: 95%;
+    max-width: 560px;
+    border-radius: 32px;
+    box-shadow: 0 30px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    animation: fadeSlideUp 0.25s ease-out;
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header-custom {
+    background: #025205;
+    padding: 1.2rem 1.5rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header-custom h5 {
+    font-weight: 700;
+    margin: 0;
+}
+
+.close-modal-btn {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: white;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-body-custom {
+    padding: 1.8rem 1.8rem;
+    background: #fefef7;
+}
+
+.form-group-modern {
+    margin-bottom: 1.4rem;
+}
+
+.form-group-modern label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1f2e1c;
+    display: block;
+}
+
+.form-control-modern {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e0e7e0;
+    border-radius: 20px;
+    transition: 0.2s;
+    background-color: white;
+}
+
+.form-control-modern:focus {
+    border-color: #025205;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(2, 82, 5, 0.2);
+}
+
+.modal-footer-custom {
+    padding: 1rem 1.8rem 1.8rem;
+    background: #fefef7;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-save {
+    background-color: #025205;
+    border: none;
+    border-radius: 40px;
+    padding: 10px 28px;
+    font-weight: 600;
+    color: white;
+}
+
+/* ========== ERROR MESSAGE ========== */
+.error-toast {
+    background-color: #f8d7da;
+    color: #a71d2a;
+    border-radius: 50px;
+    padding: 10px 18px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 500;
+    border-left: 5px solid #dc3545;
+}
+
+/* ========== FOOTER ========== */
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.8rem;
+    color: #6c6f6a;
+    border-top: 1px solid #dde2dc;
+    margin-top: 1rem;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+    .search-card {
+        margin: -1.2rem 1rem 1.5rem 1rem;
+        border-radius: 40px;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+}

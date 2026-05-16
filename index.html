@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title> Admin Login</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <!-- Login Page CSS -->
+    <link rel="stylesheet" href="css/login-page.css">
+
+    <style>
+        /* Branch selector styling — fits the glass-card aesthetic */
+        .branch-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            margin: 0.25rem 0 1rem;
+        }
+        .branch-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 0.5rem;
+            padding-left: 0.25rem;
+        }
+        .select-glass {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.92rem;
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            cursor: pointer;
+        }
+        .select-glass:focus {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.14);
+        }
+        .select-glass option {
+            background: #1e293b;
+            color: #fff;
+        }
+        .select-glass:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        /* Keep the icon wrapper consistent with existing inputs */
+        .select-wrapper {
+            position: relative;
+        }
+        .select-wrapper .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .select-wrapper .select-caret {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.4);
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="glass-card">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <div class="church-icon">
+                    <img src="images/emblem.png" alt="Church Emblem" class="church-emblem">
+                </div>
+                <h1>Welcome</h1>
+                <p>Statistics Management System</p>
+            </div>
+
+            <!-- Message Alert -->
+            <div id="loginMessage" style="display: none;" class="alert-message"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+
+                <!-- ── Branch Selection (stored on login, auto-fills register page) ── -->
+                <p class="branch-label"><i class="fas fa-code-branch" style="margin-right:0.4rem;"></i>Your Branch</p>
+
+                <div class="form-group">
+                    <div class="select-wrapper">
+                        <i class="fas fa-layer-group input-icon"></i>
+                        <select id="login_branch_level" class="select-glass" required>
+                            <option value="">Select Branch Level</option>
+                            <option value="main">Main Branch</option>
+                            <option value="sub">Sub-Branch</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-caret"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="select-wrapper">
+                        <i class="fas fa-church input-icon"></i>
+                        <select id="login_branch" class="select-glass" required disabled>
+                            <option value="">Select Branch Level First</option>
+                        </select>
+                        <i class="fas fa-chevron-down select-caret"></i>
+                    </div>
+                </div>
+
+                <hr class="branch-divider">
+
+                <!-- ── Credentials ── -->
+                <div class="form-group">
+                    <div class="input-group-custom">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="username" class="form-control-glass" placeholder="Username" autocomplete="off" autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group-custom">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" class="form-control-glass" placeholder="Password">
+                        <button type="button" id="togglePassword" class="password-toggle">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="loginBtn" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login to Dashboard</span>
+                </button>
+            </form>
+
+            <div class="demo-hint">
+                <i class="fas fa-info-circle"></i> Login with your <strong>Username</strong> and <strong>Password</strong>
+            </div>
+
+            <div class="login-footer">
+                <p>&copy; 2026 All Rights Reserved</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts - ORDER MATTERS! -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="config.public.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/login-page.js"></script>
+</body>
+</html>

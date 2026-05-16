@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Member</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+        <!-- Delete Page CSS -->
+    <link rel="stylesheet" href="../css/delete-page.css">
+    
+</head>
+
+<body>
+<script>
+    // ========== AUTHENTICATION CHECK ==========
+    // Check if user is logged in before showing page content
+    
+    function checkAuthAndRedirect() {
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('current_user');
+    
+    if (!token || !user) {
+        const isInPages = window.location.pathname.includes('/pages/');
+        window.location.href = isInPages ? '../index.html' : 'index.html';
+        return false;
+    }
+    return true;
+}
+if (!checkAuthAndRedirect()) throw new Error('Authentication required');
+</script>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../home.html">
+                <div class="logo-wrapper">
+                    <i class="fas fa-church"></i>
+                    <span class="brand-text">Delete</span>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link " href="../home.html"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/register.html"><i class="fas fa-user-plus"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/visit.html"><i class="fas fa-calendar-check"></i> Visits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/update.html"><i class="fas fa-edit"></i> Outcomes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../pages/dashboard.html"><i class="fas fa-chart-line"></i> Dashboards</a></li> 
+                    <li class="nav-item"><a class="nav-link" href="../pages/events.html"><i class="fas fa-calendar-alt"></i> Events</a></li>   
+                    <li class="nav-item"><a class="nav-link" href="../pages/payments.html"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>   
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container delete-container">
+        <!-- Page Header -->
+        <div class="hero-section" style="background: linear-gradient(135deg, var(--primary-green), var(--primary-dark)); border-radius: var(--border-radius); margin-bottom: 2rem;">
+            <div class="hero-content">
+                <h1><i class="fas fa-trash-alt"></i> Delete Member</h1>
+                <p>Permanently remove a member from the church registry</p>
+            </div>
+        </div>
+
+        <!-- Message Area -->
+        <div id="messageArea" style="display: none;" class="alert-message"></div>
+
+        <!-- Search Member Section -->
+        <div class="search-member-section" id="searchSection">
+            <h4><i class="fas fa-search"></i> Find Member to Delete</h4>
+            <p class="text-muted">Search for the member you want to permanently remove from the database.</p>
+            
+            <div class="row mt-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-icon"><i class="fas fa-search"></i></span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search by name, PIN, or contact..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn-primary-modern w-100" onclick="searchMembers()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div id="searchResults" class="mt-4 search-results" style="display: none;">
+                <h5><i class="fas fa-users"></i> Search Results</h5>
+                <div id="membersList"></div>
+            </div>
+        </div>
+
+        <!-- Confirmation Section (initially hidden) -->
+        <div id="confirmationSection" style="display: none;">
+            <div class="warning-card" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%); border-radius: var(--border-radius); padding: 2rem; text-align: center;">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="text-danger">⚠️ Warning: This Action Cannot Be Undone!</h3>
+                <p class="mt-3">You are about to permanently delete a member from the church registry. All member data, including status history, will be lost forever.</p>
+                
+                <!-- Member Details Card -->
+                <div class="member-details-card text-start">
+                    <h5><i class="fas fa-user"></i> Member Details</h5>
+                    <div id="memberDetails">
+                        <!-- Dynamic member details will appear here -->
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary-custom" onclick="cancelDelete()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button class="btn-danger-custom" onclick="confirmDelete()">
+                        <i class="fas fa-trash-alt"></i> Permanently Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <i class="fas fa-heart"></i> Management System
+                </div>
+                <div class="footer-section">
+                    <span id="currentYear"></span> &copy; All Rights Reserved
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/api-client.js"></script>
+    <script>
+        let members = [];
+        let selectedMember = null;
+
+        // Load members from localStorage
+        function loadMembers() {
+            const stored = localStorage.getItem('kganya_members');
+            if (stored) {
+                members = JSON.parse(stored);
+            } else {
+                // Initialize with sample data if empty
+                members = [
+                    { 
+                        member_id: '1', 
+                        firstname: 'Thabo', 
+                        middlename: 'David', 
+                        surname: 'Nkosi', 
+                        pin: '8001011234087', 
+                        gender: 'Male', 
+                        contact: '0712345678', 
+                        date_of_baptism: '2020-03-15', 
+                        kganya_member: 'Yes',
+                        statusHistory: []
+                    },
+                    { 
+                        member_id: '2', 
+                        firstname: 'Lerato', 
+                        middlename: 'Grace', 
+                        surname: 'Mokoena', 
+                        pin: '9002025678123', 
+                        gender: 'Female', 
+                        contact: '0823456789', 
+                        date_of_baptism: '2019-08-22', 
+                        kganya_member: 'Yes',
+                        statusHistory: []
+                    }
+                ];
+                saveToLocalStorage();
+            }
+        }
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('kganya_members', JSON.stringify(members));
+        }
+
+        // Search members
+        function searchMembers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                showMessage('Please enter a search term', 'error');
+                return;
+            }
+
+            const filtered = members.filter(m => 
+                m.firstname.toLowerCase().includes(searchTerm) ||
+                (m.middlename && m.middlename.toLowerCase().includes(searchTerm)) ||
+                m.surname.toLowerCase().includes(searchTerm) ||
+                m.pin.toLowerCase().includes(searchTerm) ||
+                m.contact.toLowerCase().includes(searchTerm)
+            );
+
+            displaySearchResults(filtered);
+        }
+
+        // Display search results
+        function displaySearchResults(results) {
+            const resultsDiv = document.getElementById('searchResults');
+            const membersListDiv = document.getElementById('membersList');
+
+            if (results.length === 0) {
+                membersListDiv.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--text-gray);"></i>
+                        <p class="mt-2">No members found matching your search.</p>
+                    </div>
+                `;
+            } else {
+                membersListDiv.innerHTML = results.map(member => `
+                    <div class="member-select-card p-3 mb-2 rounded" onclick="selectMember('${member.member_id}')" data-id="${member.member_id}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${escapeHtml(member.firstname)} ${escapeHtml(member.surname)}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-id-card"></i> ${member.pin} | 
+                                    <i class="fas fa-phone"></i> ${member.contact || 'N/A'}
+                                </small>
+                            </div>
+                            <i class="fas fa-chevron-right" style="color: var(--primary-green);"></i>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            resultsDiv.style.display = 'block';
+        }
+
+        // Select member for deletion
+        function selectMember(memberId) {
+            selectedMember = members.find(m => m.member_id === memberId);
+            
+            if (selectedMember) {
+                // Highlight selected card
+                document.querySelectorAll('.member-select-card').forEach(card => {
+                    card.classList.remove('selected');
+                    if (card.getAttribute('data-id') === memberId) {
+                        card.classList.add('selected');
+                    }
+                });
+
+                // Show confirmation section with member details
+                showConfirmation();
+            }
+        }
+
+        // Show confirmation section
+        function showConfirmation() {
+            if (!selectedMember) return;
+
+            const memberDetailsDiv = document.getElementById('memberDetails');
+            memberDetailsDiv.innerHTML = `
+                <div class="member-detail-row">
+                    <div class="member-detail-label">Full Name:</div>
+                    <div class="member-detail-value">
+                        <strong>${escapeHtml(selectedMember.firstname)} ${escapeHtml(selectedMember.middlename)} ${escapeHtml(selectedMember.surname)}</strong>
+                    </div>
+                </div>
+                <div class="member-detail-row">
+                    <div class="member-detail-label">PIN/ID:</div>
+                    <div class="member-detail-value">${escapeHtml(selectedMember.pin)}</div>
+                </div>
+                <div class="member-detail-row">
+                    <div class="member-detail-label">Gender:</div>
+                    <div class="member-detail-value">${selectedMember.gender}</div>
+                </div>
+                <div class="member-detail-row">
+                    <div class="member-detail-label">Contact:</div>
+                    <div class="member-detail-value">${escapeHtml(selectedMember.contact || 'N/A')}</div>
+                </div>
+                <div class="member-detail-row">
+                    <div class="member-detail-label">Baptism Date:</div>
+                    <div class="member-detail-value">${formatDate(selectedMember.date_of_baptism)}</div>
+                </div>
+                <div class="member-detail-row">
+                    <div class="member-detail-label">Kganya Member:</div>
+                    <div class="member-detail-value">
+                        <span class="kganya-badge ${selectedMember.kganya_member === 'Yes' ? 'yes' : 'no'}">
+                            ${selectedMember.kganya_member}
+                        </span>
+                    </div>
+                </div>
+                ${selectedMember.statusHistory && selectedMember.statusHistory.length > 0 ? `
+                    <div class="member-detail-row">
+                        <div class="member-detail-label">Status Updates:</div>
+                        <div class="member-detail-value">${selectedMember.statusHistory.length} records</div>
+                    </div>
+                ` : ''}
+            `;
+
+            document.getElementById('searchSection').style.display = 'none';
+            document.getElementById('confirmationSection').style.display = 'block';
+            
+            // Scroll to confirmation
+            document.getElementById('confirmationSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Confirm and delete member
+        function confirmDelete() {
+            if (!selectedMember) {
+                showMessage('No member selected for deletion', 'error');
+                return;
+            }
+
+            // Remove member from array
+            const index = members.findIndex(m => m.member_id === selectedMember.member_id);
+            if (index !== -1) {
+                members.splice(index, 1);
+                saveToLocalStorage();
+                
+                showMessage(`${selectedMember.firstname} ${selectedMember.surname} has been permanently deleted.`, 'success');
+                
+                // Reset form after 2 seconds and redirect to search page
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 2000);
+            } else {
+                showMessage('Error: Member not found in database', 'error');
+            }
+        }
+
+        // Cancel deletion
+        function cancelDelete() {
+            selectedMember = null;
+            document.getElementById('confirmationSection').style.display = 'none';
+            document.getElementById('searchSection').style.display = 'block';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+            showMessage('Deletion cancelled', 'info');
+        }
+
+        // Show message
+        function showMessage(msg, type) {
+            const messageDiv = document.getElementById('messageArea');
+            messageDiv.className = `alert-message ${type === 'success' ? 'success' : (type === 'error' ? 'error' : 'info')}`;
+            messageDiv.innerHTML = `
+                <span>${type === 'success' ? '✓' : (type === 'error' ? '⚠' : 'ℹ')} ${msg}</span>
+                <button class="close-msg" onclick="hideMessage()">&times;</button>
+            `;
+            messageDiv.style.display = 'flex';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    hideMessage();
+                }, 3000);
+            }
+        }
+
+        // Hide message
+        function hideMessage() {
+            document.getElementById('messageArea').style.display = 'none';
+        }
+
+        // Helper: Escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Helper: Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-ZA');
+        }
+
+        // Update current year in footer
+        function updateCurrentYear() {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+        }
+
+        // Initialize page
+        function init() {
+            loadMembers();
+            updateCurrentYear();
+            
+            // Add enter key search
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchMembers();
+                }
+            });
+        }
+
+        // Start the application
+        init();
+    </script>
+
+
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                if (typeof api !== 'undefined') await api.logout();
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        }
+    </script>
+
+</body>
+</html>
